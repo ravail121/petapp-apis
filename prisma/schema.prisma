@@ -1,0 +1,162 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Users {
+  id       Int     @id @default(autoincrement())
+  email    String  @unique
+  name     String
+  password String
+  isAdmin  Boolean
+
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+}
+
+model Categories {
+  id             Int        @id @default(autoincrement())
+  name           String     @unique
+  imageName      String
+  frontImageName String     @default("")
+  description    String
+  default        Int        @default(0)
+  Products       Products[]
+
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+}
+
+model Products {
+  id               Int                  @id @default(autoincrement())
+  category         Categories           @relation(fields: [categoriesId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  categoriesId     Int
+  name             String
+  dropshipPrice    String               @default("")
+  imageName        String               @default("")
+  description      String               @default("")
+  stockName        String               @default("")
+  fullDescription  String               @db.Text
+  weight           String               @default("")
+  barcode          String               @default("")
+  rrp              String               @default("")
+  ordersToProducts Orders_To_Products[]
+
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+}
+
+model Orders {
+  id           Int    @id @default(autoincrement())
+  orderNo      String @unique
+  emailAddress String
+  totalAmount  String
+
+  shippingFee String @default("0")
+  totalTax    String @default("0")
+
+  subTotal String @default("0")
+
+  status      Order_Statuses @relation(fields: [orderStatus], references: [value])
+  orderStatus String
+
+  emailSent Boolean @default(false)
+
+  orderToProducts        Orders_To_Products[]
+  orderHistory           Order_History[]
+  orderToShippingDetails Orders_To_ShippingDetails[]
+  createdAt              DateTime?                   @default(now())
+  updatedAt              DateTime?                   @updatedAt
+}
+
+model Orders_To_Products {
+  id           Int       @id @default(autoincrement())
+  product      Products? @relation(fields: [productId], references: [id], onUpdate: Cascade, onDelete: SetNull)
+  productId    Int?
+  productName  String
+  productStock String?
+
+  order   Orders @relation(fields: [orderId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  orderId Int
+
+  quantity Int
+  amount   Float
+
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+}
+
+model Order_History {
+  id      Int    @id @default(autoincrement())
+  order   Orders @relation(fields: [orderId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  orderId Int
+
+  status_prev Order_Statuses @relation("prevStatus", fields: [prevStatus], references: [value])
+  prevStatus  String
+
+  status_new Order_Statuses @relation("newStatus", fields: [newStatus], references: [value])
+  newStatus  String
+
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+}
+
+model Orders_To_ShippingDetails {
+  id              Int    @id @default(autoincrement())
+  order           Orders @relation(fields: [orderId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  orderId         Int
+  shippingAddress String
+}
+
+model Order_Statuses {
+  id    Int    @id @default(autoincrement())
+  value String @unique
+
+  ordersStauses Orders[]
+
+  Order_History_Previous Order_History[] @relation("prevStatus")
+  Order_History_New      Order_History[] @relation("newStatus")
+
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+}
+
+model Customer_Queries {
+  id      Int    @id @default(autoincrement())
+  from    String
+  message String
+
+  readStatus  Boolean @default(false)
+  replyStatus Boolean @default(false)
+
+  customerQueriesHistory Customer_Queries_History[]
+
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+}
+
+model Customer_Queries_History {
+  id             Int              @id @default(autoincrement())
+  customer_query Customer_Queries @relation(fields: [queryId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  queryId        Int
+
+  adminMessage String
+
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+}
+
+model Shipping_Settings {
+  id           Int    @id @default(autoincrement())
+  tax          Float
+  shippingFee  Int
+  currency     String @default("Dollar")
+  currencySign String @default("$")
+}
