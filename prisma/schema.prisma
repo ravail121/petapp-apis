@@ -160,3 +160,12 @@ model Shipping_Settings {
   currency     String @default("Dollar")
   currencySign String @default("$")
 }
+
+
+
+model Payment_Intents {
+  id           Int    @id @default(autoincrement())
+  orderId         Int
+  orderNo String
+  paymentId String
+}

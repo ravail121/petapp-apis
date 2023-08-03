@@ -6,14 +6,14 @@ const prisma = require("../db/prisma");
 
 
 // Add Order
-exports.add = async (emailAddress , totalAmount , orderDetails , shippingAddress , shippingFee , totalTax) => {
+exports.add = async (emailAddress , totalAmount , orderDetails , shippingAddress , shippingFee , totalTax , paymentId) => {
     let order;
     try {
 
         let orderNo = generateOrderNumber( process.env.ORDER_NO_LENGTH );
         let orderStatus = process.env.NEW_ORDER_STATUS;
 
-        let subTotal = (parseFloat( totalAmount ) + parseFloat( shippingFee ) + parseFloat( totalTax ) ).toString();        
+        let subTotal = (parseFloat( totalAmount ) + parseFloat( shippingFee ) + parseFloat( totalTax ) ).toFixed(2).toString();        
         
         let orderEntity = { 
             orderNo , emailAddress ,  totalAmount , 
@@ -50,8 +50,16 @@ exports.add = async (emailAddress , totalAmount , orderDetails , shippingAddress
                     shippingAddress 
                 }
             })
+
+            const order_paymentId = await prisma.Payment_Intents.create({
+                data: {
+                    orderId : order.id,
+                    orderNo : orderNo,
+                    paymentId : paymentId
+                }
+            })
         
-            return { order, order_to_products , order_history , order_shippingAddress};
+            return { order, order_to_products , order_history , order_shippingAddress ,order_paymentId };
           });
 
         let logoImagePath = `${process.env.SERVER_URL}/${process.env.STATIC_DIR}/${process.env.GENERIC_ASSETS_DIR}/${process.env.LOGO_IMG}`
@@ -62,6 +70,8 @@ exports.add = async (emailAddress , totalAmount , orderDetails , shippingAddress
 
 
         let tableRowsHtml =  makeTableRowsHtml( orderDetails );
+
+        totalAmount = parseFloat( totalAmount ).toFixed(2).toString();
         
         let replaceObject = [
             { original  : "logoImgUrl" , newVal :  logoImagePath },
@@ -165,6 +175,7 @@ exports.get = async ( id ) => {
     let orderHistory;
     let orderProductDetails;
     let orderShippingAddress;
+    let orderPaymentIdDetails;
 
     try {
 
@@ -195,8 +206,14 @@ exports.get = async ( id ) => {
             select : { newStatus : true , createdAt : true }
 
         });
+
+
+        orderPaymentIdDetails =  await prisma.Payment_Intents.findMany({
+            where : { orderId : parseInt(id) }
+        })
         
 
+        order.paymentId = orderPaymentIdDetails[0].paymentId
 
         order.shippingAddress = orderShippingAddress[0].shippingAddress;
         order.productDetails = orderProductDetails;

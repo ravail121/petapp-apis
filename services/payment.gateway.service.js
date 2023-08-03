@@ -22,7 +22,9 @@ exports.createIntent = async (amount , currency , name , address , country , des
         const clientSecret = paymentIntent.client_secret;
 
         console.log({paymentIntent})
-                    
+
+
+        
 
         return {
             statusCode: 200,

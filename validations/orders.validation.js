@@ -112,6 +112,17 @@ const orderValidation = {
             message: "Total Tax required",
           };
         }),
+
+        paymentId  : Joi.string().required()
+          .error(() => {
+            throw {
+              status: 200,
+              statusCode: 400,
+              success: false,
+              data : {},
+              message: "paymentId required",
+            };
+          }),
         
     }),
 

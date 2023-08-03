@@ -11,7 +11,8 @@ exports.addOrder = async (req, res) => {
             totalTax,
             totalAmount , 
             orderDetails , 
-            shippingAddress 
+            shippingAddress ,
+            paymentId
         } = req.body;
 
         // Data Validation
@@ -23,6 +24,7 @@ exports.addOrder = async (req, res) => {
             shippingAddress,
             shippingFee,
             totalTax,
+            paymentId
 
         });
 
@@ -30,7 +32,7 @@ exports.addOrder = async (req, res) => {
         totalTax = totalTax.toString();
         shippingFee = shippingFee.toString();
 
-        res.json(await orderService.add( emailAddress , totalAmount , orderDetails , shippingAddress , shippingFee , totalTax ));
+        res.json(await orderService.add( emailAddress , totalAmount , orderDetails , shippingAddress , shippingFee , totalTax ,paymentId ));
     } catch (err) {
         const { status } = err;
         const s = status ? status : "500";

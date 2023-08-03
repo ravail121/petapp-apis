@@ -19,11 +19,11 @@ exports.getTotalCount = async (  ) => {
 
 
 
-        let sqlQuery = "SELECT COUNT(id) AS Count ,  SUM(totalAmount) AS Revenue FROM Orders";
+        let sqlQuery = "SELECT COUNT(id) AS Count ,  SUM(subTotal) AS Revenue FROM Orders WHERE orderStatus='Dispatched'";
         let responce = await runQuery( sqlQuery )
 
         if(responce.status){
-            totalRevenue = responce.result[0].Revenue;
+            totalRevenue = responce.result[0].Revenue ? responce.result[0].Revenue : 0 ;
             totalOrdersCount = responce.result[0].Count;
             return {
                 statusCode: 200,
@@ -78,18 +78,25 @@ exports.getProductsRevenue = async ( start , end  ) => {
         sqlQuery = `SELECT revenue , totalQuantity, productId , SUBSTRING_INDEX(productName ,  "${process.env.PRODUCT_NAME_SEPRATOR}" , 1) AS productName FROM ( `
 
         if(start && end){
-            sqlQuery += 'SELECT SUM(amount) AS revenue, SUM(quantity) AS totalQuantity, '
+            sqlQuery += 'SELECT ROUND(SUM(amount) , 2) AS revenue, SUM(quantity) AS totalQuantity, '
             sqlQuery += `GROUP_CONCAT(productName separator "${process.env.PRODUCT_NAME_SEPRATOR}") AS productName , productId `
             sqlQuery += 'FROM Orders_To_Products WHERE '
             sqlQuery += 'productId IN ( SELECT id FROM Products) AND '
+
+            sqlQuery += 'orderId IN ( SELECT id FROM Orders WHERE orderStatus="Dispatched" ) AND '
+
             sqlQuery += `createdAt Between '${start}' AND '${end}' `
             sqlQuery += 'GROUP BY productId'
         }
         else{
-            sqlQuery += 'SELECT SUM(amount) AS revenue, SUM(quantity) AS totalQuantity, '
+            sqlQuery += 'SELECT ROUND(SUM(amount) , 2) AS revenue, SUM(quantity) AS totalQuantity, '
             sqlQuery += `GROUP_CONCAT(productName separator "${process.env.PRODUCT_NAME_SEPRATOR}") AS productName , productId `
             sqlQuery += 'FROM Orders_To_Products WHERE '
             sqlQuery += 'productId IN ( SELECT id FROM Products) '
+
+            sqlQuery += 'AND orderId IN ( SELECT id FROM Orders WHERE orderStatus="Dispatched" ) '
+
+
             sqlQuery += 'GROUP BY productId'
         }
 
