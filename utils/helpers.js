@@ -57,8 +57,10 @@ exports.sendEmail = async (recieverMail , subject , body)=>{
   return await new Promise((resolve , reject)=>{
       transporter.sendMail(mailOptions, (error, info) => {
         if (error) {
+          console.log("Mail Error :- " , {error})
           resolve( { status : false , message : error.message } )
         } else {
+          console.log("Mail Info :- " , {info})
           resolve( {status : true , message : info.messageId} )
         }
       });
