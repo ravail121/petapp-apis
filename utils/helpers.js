@@ -1,5 +1,7 @@
 require("dotenv").config();
 const nodemailer = require("nodemailer");
+const sendgridTransport = require("nodemailer-sendgrid-transport");
+
 
 exports.isUrl = (str)=>{
     const urlPattern = /^(?:\w+:)?\/\/([^\s.]+\.\S{2}|localhost[:?\d]*)\S*$/;
@@ -22,13 +24,24 @@ exports.generateOrderNumber = (length)=>{
 
 
 exports.sendEmail = async (recieverMail , subject , body)=>{
-  const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-      user: process.env.EMAIL_ADDRESS,
-      pass: process.env.EMAIL_PASSWORD,
-    },
-  });
+  // const transporter = nodemailer.createTransport({
+  //   service: 'gmail',
+  //   auth: {
+  //     user: process.env.EMAIL_ADDRESS,
+  //     pass: process.env.EMAIL_PASSWORD,
+  //   },
+  // });
+
+  
+  const transporter = nodemailer.createTransport(
+    sendgridTransport({
+      auth: {
+        api_key: process.env.SENDGRID_API_KEY,
+      },
+    })
+  );
+  
+
 
 
   // Define the email options
