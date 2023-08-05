@@ -2,6 +2,7 @@ require("dotenv").config();
 const {generateOrderNumber} = require("../utils/helpers")
 const {populateEmailTemplate , makeTableRowsHtml} = require("../utils/mailTemplatesgenerator");
 const {sendEmail } = require("../utils/helpers");
+const { runQuery } = require("../utils/worker");
 const prisma = require("../db/prisma");
 
 
@@ -125,6 +126,61 @@ exports.add = async (emailAddress , totalAmount , orderDetails , shippingAddress
         };
     }
 };
+
+
+
+exports.checkProducts = async( productIds )=>{
+    let sqlQuery;
+    try {
+
+        // orders = await prisma.Orders.findMany({
+        //     orderBy : {
+        //         createdAt : "desc"
+        //     }
+        // });
+        sqlQuery = "SELECT id FROM Products WHERE id IN ( ";
+        productIds.map((id)=>{ sqlQuery += `${id} ,` })
+        sqlQuery = sqlQuery.slice(0 , -1);
+        sqlQuery += ")"
+
+        let resp = await runQuery(sqlQuery);
+        if(resp.status){
+            let existingIds = resp.result.map((elem)=>{ return elem.id });
+            return {
+                statusCode: 200,
+                success: true,
+                data : { existingIds },
+                message: "Existing Ordered Products Returned Successfully",
+            };
+    
+        }
+
+        return {
+            statusCode: 400,
+            success: false,
+            data : {  },
+            message: "Existing Ordered Products Not Found",
+        };
+
+
+    } catch (err) {
+        console.log({err})
+        if(err.code == "P2002"){
+            return {
+                statusCode: 400,
+                success: false,
+                data : {},
+                message: "Error while getting Ordered Products details",
+            };    
+        }
+        return {
+            statusCode: 400,
+            success: false,
+            data : {},
+            message: "Ordered Product Ids not fetched",
+        };
+    }
+}
 
 
 

@@ -1,6 +1,21 @@
 const Joi = require("joi");
 
 const orderValidation = {
+
+  checkProducts : Joi.object().keys({
+
+    productIds : Joi.array().items(Joi.number().integer()).min(1).required().error(()=>{
+      throw {
+        status : 200,
+        statusCode : 400,
+        success : false,
+        data : {},
+        message : "ProductIds List Required and It cannot be empty"
+      }
+    })   
+ 
+  }),
+
   add: Joi.object().keys({
     emailAddress: Joi.string().required()
       .error(() => {

@@ -47,6 +47,34 @@ exports.addOrder = async (req, res) => {
 
 
 
+exports.checkOrderedProducts = async(req , res)=>{
+    try {
+        let { productIds } = req.body;
+
+        // Data Validation
+        const JoiSchema = orderValidation.checkProducts;
+        await JoiSchema.validateAsync({
+            productIds,
+
+        });
+
+
+        res.json(await orderService.checkProducts( productIds ));
+    } catch (err) {
+        const { status } = err;
+        const s = status ? status : "500";
+        res.status(s).send({
+            statusCode: err.statusCode,
+            success: err.success,
+            data : err.data,
+            message: err.message,
+        });
+    }      
+}
+
+
+
+
 // get all orders
 exports.getAllOrders = async (req, res) => {    
     try {
@@ -132,9 +160,6 @@ exports.updateOrderStatus = async (req, res) => {
         });
     }  
 };
-
-
-
 
 
 
