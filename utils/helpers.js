@@ -47,6 +47,7 @@ exports.sendEmail = async (recieverMail , subject , body)=>{
   // Define the email options
   const mailOptions = {
       from: process.env.EMAIL_ADDRESS ,
+      fromname : process.env.FROM_NAME ,
       to: recieverMail ,
       subject: subject ,
       html: body,
