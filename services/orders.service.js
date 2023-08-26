@@ -68,6 +68,7 @@ exports.add = async (emailAddress , totalAmount , orderDetails , shippingAddress
         let footerImagePath = `${process.env.SERVER_URL}/${process.env.STATIC_DIR}/${process.env.GENERIC_ASSETS_DIR}/${process.env.EMAIL_FOOTER_IMAGE}`
                   
 
+        console.log({logoImagePath});
 
 
         let tableRowsHtml =  makeTableRowsHtml( orderDetails );
