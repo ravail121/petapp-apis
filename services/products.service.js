@@ -754,7 +754,7 @@ exports.getAllByCategory_Filter_List = async (
             products = responce.products;
             totalCount = responce.count;
 
-            totalCount = Math.round(totalCount / limit)
+            // totalCount = Math.round(totalCount / limit)
             totalCount = totalCount == 0 ? 1 : totalCount;
 
             products = products.map((item_)=>{
