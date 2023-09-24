@@ -304,7 +304,7 @@ exports.getAllByCategory_Filter_List = async (req, res) => {
         categories = categories ? categories : [];
 
         
-        if(!price && categories.length == 0){
+        if((!price || price.length == 0) && categories.length == 0){
             filterFlag = false;
         }
 
